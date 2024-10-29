@@ -26,7 +26,7 @@ const App = () => {
                 </View>
             </View>
             <View>
-                <Text>Shukria Zamam</Text>
+                <Text style={{ textAlign: 'center' }}>Our First Class</Text>
             </View>
         </View>
     );
