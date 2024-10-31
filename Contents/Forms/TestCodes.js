@@ -2,80 +2,44 @@ import React, { useState } from "react";
 import { Button, StyleSheet, Text, TextInput, View } from "react-native";
 
 const TestCodes = () => {
+    const ss = StyleSheet.create({
+        mainView: {
+            backgroundColor: 'aqua', flex: 1,
+            padding: 10,
+            justifyContent: 'center',
 
-    const [error, setError] = useState('')
-    const [pass, setPass] = useState('')
-    const [user, setUser] = useState('')
-    const [errorColor, seterrorColor] = useState('red')
 
-    const onPressButtonHandler = () => {
-        if (!user || !pass) {
-            setError('Enter All Fields');
-        }
-        else {
-            if (user == 'Ali' && pass == '123') {
-                seterrorColor('green')
-                setError('Login Successful:')
-            }
-            else {
-                setError('Invalid User Name or Password')
-            }
-        }
-    }
-    const myStyle = StyleSheet.create(
-        {
-            mainContainer: {
-                flex: 1,
-                padding: 5,
-                backgroundColor: 'lightblue',
-                justifyContent: 'center',
-            },
-            textInput: {
-                backgroundColor: 'white',
-                borderRadius: 10,
-                margin: 10,
-                fontSize: 20,
-            },
-            btn: {
-                margin: 10,
-                width: '50%',
-                alignSelf: 'center'
-            },
-            InvalidUserPass: {
-                textAlign: 'center',
-                fontSize: 20,
-                marginTop: -5,
-                color: errorColor,
-            },
-        }
-    );
+        },
+        viewInputs: {
 
+        },
+        txtInputs: {
+            backgroundColor: 'white', margin: 10,
+            fontSize: 20, borderRadius: 15,
+        }
+    });
+
+    const [userName, setUserName] = useState('hello');
     return (
-        <View style={myStyle.mainContainer}>
+        <View style={ss.mainView}>
+            <View style={ss.viewInputs}>
+                <TextInput
+                    onChangeText={val => { setUserName(val) }}
+                    style={ss.txtInputs}></TextInput>
+                <TextInput style={ss.txtInputs}></TextInput>
+            </View>
             <View>
-                <View id='textField'>
-                    <View>
-                        <TextInput
-                            onChangeText={setUser}
-                            value={user} placeholder="UserName" style={myStyle.textInput}></TextInput>
-
-                        <TextInput
-                            onChangeText={setPass}
-                            value={pass} secureTextEntry={true} placeholder="Password" style={myStyle.textInput}></TextInput>
-                    </View>
-
-                    <View>
-                        <Text style={myStyle.InvalidUserPass}>{error}</Text>
-                    </View>
-
-                    <View style={myStyle.btn}>
-                        <Button title='Login' onPress={onPressButtonHandler} />
-                    </View>
-                </View>
+                <Text
+                    style={{
+                        textAlign: 'center',
+                        fontSize: 35, color: 'black'
+                    }}>
+                    {userName}</Text>
+            </View>
+            <View style={{ alignSelf: 'center' }}>
+                <Button title="Login"></Button>
             </View>
         </View>
     );
 }
-
-
 export default TestCodes;
