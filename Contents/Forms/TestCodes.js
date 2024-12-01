@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TextInput } from "react-native";
+import { StyleSheet, Text, View, TextInput, FlatList } from "react-native";
 import { Button } from "react-native-paper";
 import { openDatabase } from 'react-native-sqlite-storage';
 
@@ -7,8 +7,35 @@ const TestCodes = () => {
 
     const [ID, setID] = useState(0);
     const [name, setName] = useState('');
+    const [allPersons, setAllPersons] = useState([])
 
     const db = openDatabase({ name: 'MapDB.db' });
+
+    const showAll = ({ item }) => {
+        return (<View>
+            <Text style={ss.txtView}>{item.ID} --- {item.Name}</Text>
+        </View>);
+
+    }
+
+
+    const getAllPersons = () => {
+        db.transaction(txn => {
+            txn.executeSql(
+                'SELECT * FROM PERSON',
+                [],
+                (txn, res) => {
+                    var tempAllPersons = [];
+                    for (i = 0; i < res.rows.length; i++) {
+                        var p = res.rows.item(i);
+                        tempAllPersons.push(p);
+                    }
+                    setAllPersons([...tempAllPersons])
+                },
+                (err) => { console.log(err.message) }
+            );
+        });
+    }
 
     const createTable = () => {
         db.transaction((txn) => {
@@ -39,19 +66,14 @@ const TestCodes = () => {
                 [ID],
                 (txn, res) => {
                     var p = res.rows.item(0);
-                    console.log(p)
+                    console.log(p.Name)
+                    setName(p.Name)
                 },
                 (error) => { console.log(error.message) }
             );
         });
     }
-
-
-
-
     useEffect(createTable, []);
-
-
 
     const callBackFunc = () => {
         console.log('FunctionCalled:');
@@ -65,7 +87,9 @@ const TestCodes = () => {
             <TextInput placeholder="Enter ID"
                 onChangeText={setID}
                 style={{ borderWidth: 1, borderRadius: 10, margin: 10, fontSize: 20, }} />
-            <TextInput placeholder="Enter Name"
+            <TextInput
+                value={name}
+                placeholder="Enter Name"
                 onChangeText={setName}
                 style={{ borderWidth: 1, borderRadius: 10, margin: 10, fontSize: 20, }} />
             <Button
@@ -79,10 +103,19 @@ const TestCodes = () => {
                 Show By ID
             </Button>
             <Button
+                onPress={getAllPersons}
                 mode="contained" style={{ borderRadius: 10, margin: 10, width: '40%', alignSelf: "center" }}>
                 Show All
             </Button>
-
+            <Button
+                onPress={() => { setAllPersons([]) }}
+                mode="contained" style={{ borderRadius: 10, margin: 10, width: '40%', alignSelf: "center" }}>
+                RESET
+            </Button>
+            <FlatList
+                data={allPersons}
+                renderItem={showAll}
+            />
         </View>
 
     );
