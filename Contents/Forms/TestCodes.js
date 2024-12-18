@@ -1,131 +1,79 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TextInput, FlatList } from "react-native";
+import { FlatList, Image, ImageBackground, Pressable, Text, TextInput, View } from "react-native";
 import { Button } from "react-native-paper";
-import { openDatabase } from 'react-native-sqlite-storage';
-
+import * as ImagePicker from 'react-native-image-picker'
+import { openDatabase } from 'react-native-sqlite-storage'
 const TestCodes = () => {
 
-    const [ID, setID] = useState(0);
-    const [name, setName] = useState('');
-    const [allPersons, setAllPersons] = useState([])
-
-    const db = openDatabase({ name: 'MapDB.db' });
-
-    const showAll = ({ item }) => {
-        return (<View>
-            <Text style={ss.txtView}>{item.ID} --- {item.Name}</Text>
-        </View>);
-
-    }
-
-
-    const getAllPersons = () => {
-        db.transaction(txn => {
-            txn.executeSql(
-                'SELECT * FROM PERSON',
+    const db = openDatabase({ name: 'Employees.db' });
+    useEffect(() => {
+        db.transaction(txl => {
+            txl.executeSql(
+                'create table if not exists Emp' +
+                '(empId integer primary key AUTOINCREMENT,name text,' +
+                'city text, age integer, department text,Path text)',
                 [],
-                (txn, res) => {
-                    var tempAllPersons = [];
-                    for (i = 0; i < res.rows.length; i++) {
-                        var p = res.rows.item(i);
-                        tempAllPersons.push(p);
+                () => { console.log('table CREATED succesfully') },
+                (e) => { console.log(e.message) },
+            );
+        });
+    }, [])
+
+    const [myImage, setMyImage] = useState(null)
+    const [name, setName] = useState('')
+    const [city, setCity] = useState('')
+    const [age, setAge] = useState('')
+    const [department, setDepartment] = useState('')
+    const [allEmployees, setAllEmployees] = useState([])
+
+    const populateList = ({ item }) => {
+        return (
+            <View>
+                <Image
+                    source={{ uri: item.Path }}
+                    style={{ width: 150, height: 150, }}
+                />
+                <Text>{item.name} </Text>
+                <Text>{item.city} </Text>
+                <Text>{item.age} </Text>
+            </View>
+        );
+    }
+    const getAllEmployees = () => {
+        console.log('Function Executing')
+        db.transaction(txl => {
+            txl.executeSql(
+                'select * from Emp',
+                [],
+                (txl, resp) => {
+                    console.log(resp.rows.length)
+                    var tempAllEmployees = [];
+                    for (var i = 0; i < resp.rows.length; i++) {
+                        console.log(resp.rows.item(i))
+                        var emp = {
+                            name: resp.rows.item(i).name,
+                            city: resp.rows.item(i).city,
+                            age: resp.rows.item(i).age,
+                            Path: resp.rows.item(i).Path
+                        }
+                        tempAllEmployees.push(emp)
                     }
-                    setAllPersons([...tempAllPersons])
+                    setAllEmployees(tempAllEmployees)
                 },
-                (err) => { console.log(err.message) }
-            );
-        });
+                (error) => { error.message }
+            )
+        })
     }
-
-    const createTable = () => {
-        db.transaction((txn) => {
-            txn.executeSql(
-                'CREATE TABLE if not exists  Person(ID INTEGER PRIMARY KEY,Name Text)',
-                [],
-                (txn, result) => { console.log('Table Created Succesfully') },
-                (error) => { console.log(error.message) }
-            );
-        });
-    }
-
-    const AddPerson = () => {
-        db.transaction((txn) => {
-            txn.executeSql(
-                `insert into person(id,name) values (?,?)`,
-                [ID, name],
-                (txn, result) => { console.log('Inserted Successfully') },
-                (error) => { console.log(error.message) }
-            );
-        });
-    }
-
-    const getByID = () => {
-        db.transaction(txn => {
-            txn.executeSql(
-                'select * from person where ID=?',
-                [ID],
-                (txn, res) => {
-                    var p = res.rows.item(0);
-                    console.log(p.Name)
-                    setName(p.Name)
-                },
-                (error) => { console.log(error.message) }
-            );
-        });
-    }
-    useEffect(createTable, []);
-
-    const callBackFunc = () => {
-        console.log('FunctionCalled:');
-        setSquare(count * count)
-    }
-
-
     return (
-
-        <View style={{ flex: 1, }}>
-            <TextInput placeholder="Enter ID"
-                onChangeText={setID}
-                style={{ borderWidth: 1, borderRadius: 10, margin: 10, fontSize: 20, }} />
-            <TextInput
-                value={name}
-                placeholder="Enter Name"
-                onChangeText={setName}
-                style={{ borderWidth: 1, borderRadius: 10, margin: 10, fontSize: 20, }} />
+        <View>
             <Button
-                onPress={AddPerson}
-                mode="contained" style={{ borderRadius: 10, margin: 10, width: '40%', alignSelf: "center" }}>
-                Add Data
-            </Button>
-            <Button
-                onPress={getByID}
-                mode="contained" style={{ borderRadius: 10, margin: 10, width: '40%', alignSelf: "center" }}>
-                Show By ID
-            </Button>
-            <Button
-                onPress={getAllPersons}
-                mode="contained" style={{ borderRadius: 10, margin: 10, width: '40%', alignSelf: "center" }}>
-                Show All
-            </Button>
-            <Button
-                onPress={() => { setAllPersons([]) }}
-                mode="contained" style={{ borderRadius: 10, margin: 10, width: '40%', alignSelf: "center" }}>
-                RESET
-            </Button>
+                onPress={getAllEmployees}
+                mode='elevated'> Show All Employee</Button>
             <FlatList
-                data={allPersons}
-                renderItem={showAll}
+                data={allEmployees}
+                renderItem={populateList}
             />
         </View>
-
-    );
+    )
 }
-
-const ss = StyleSheet.create({
-    txtView: {
-        backgroundColor: 'purple', margin: 10, padding: 10, fontSize: 30,
-        color: 'white', textAlign: 'center', borderRadius: 10,
-    },
-});
-
 export default TestCodes;
